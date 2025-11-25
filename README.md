@@ -41,8 +41,9 @@
 
         .menu-grid {
             display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 2rem;
-            max-width: 800px;
+            max-width: 1000px;
             margin: 0 auto;
         }
 
@@ -69,6 +70,13 @@
         .card p {
             color: #4b5563;
             line-height: 1.6;
+            margin-bottom: 0.5rem;
+        }
+
+        .card .word-count {
+            color: #0f766e;
+            font-weight: 600;
+            font-size: 0.9rem;
         }
 
         .hidden {
@@ -81,6 +89,8 @@
             align-items: center;
             margin-bottom: 2rem;
             color: white;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
 
         .btn {
@@ -104,6 +114,7 @@
             cursor: not-allowed;
         }
 
+        /* Flashcard styles */
         .flashcard-container {
             max-width: 700px;
             margin: 0 auto;
@@ -175,82 +186,96 @@
             gap: 1rem;
         }
 
-        .matching-container {
-            max-width: 1200px;
+        /* Game styles */
+        .game-container {
+            max-width: 900px;
             margin: 0 auto;
         }
 
-        .matching-grid {
+        .game-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 3rem;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
         }
 
-        .matching-column h3 {
-            color: white;
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .matching-options {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-        }
-
-        .matching-btn {
+        .game-card {
+            aspect-ratio: 1;
             background: white;
-            border: none;
-            padding: 1.25rem;
-            border-radius: 8px;
-            font-size: 1.1rem;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 1rem;
             cursor: pointer;
-            transition: all 0.2s;
-            text-align: left;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            font-size: 1rem;
+            font-weight: 600;
         }
 
-        .matching-btn:hover {
-            background: #f3f4f6;
-            transform: translateX(4px);
+        .game-card:hover {
+            transform: scale(1.05);
         }
 
-        .matching-btn.selected {
+        .game-card.flipped {
             background: #14b8a6;
             color: white;
         }
 
-        .score-display {
-            text-align: center;
+        .game-card.matched {
+            background: #10b981;
             color: white;
+            cursor: default;
+            opacity: 0.6;
         }
 
-        .score-display .score {
+        .game-card.wrong {
+            background: #ef4444;
+            color: white;
+            animation: shake 0.4s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .score-panel {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .score-panel h3 {
+            color: #0f766e;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            gap: 2rem;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
             font-size: 2rem;
             font-weight: bold;
+            color: #0f766e;
         }
 
-        .score-display .attempts {
+        .stat-label {
+            color: #6b7280;
             font-size: 0.9rem;
-        }
-
-        .feedback {
-            padding: 1rem 1.5rem;
-            border-radius: 8px;
-            margin-bottom: 1.5rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .feedback.success {
-            background: #d1fae5;
-            color: #065f46;
-        }
-
-        .feedback.error {
-            background: #fee2e2;
-            color: #991b1b;
         }
 
         .complete-card {
@@ -294,17 +319,33 @@
                 font-size: 1.8rem;
             }
 
-            .matching-grid {
-                grid-template-columns: 1fr;
-                gap: 2rem;
-            }
-
             .flashcard {
                 height: 300px;
             }
 
             .flashcard-term {
                 font-size: 2.5rem;
+            }
+
+            .game-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 0.75rem;
+            }
+
+            .game-card {
+                font-size: 0.85rem;
+                padding: 0.5rem;
+            }
+
+            .stats {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .game-grid {
+                grid-template-columns: repeat(2, 1fr);
             }
         }
     </style>
@@ -321,10 +362,17 @@
                 <div class="card" onclick="startFlashcards()">
                     <h2>📇 Fléttispjöld</h2>
                     <p>Fara í gegnum öll orðin eitt í einu. Smelltu á kortið til að sjá þýðinguna.</p>
+                    <p class="word-count">20 orð</p>
                 </div>
-                <div class="card" onclick="startMatching()">
-                    <h2>🎯 Tengispurningar</h2>
-                    <p>Tengdu latnesku orðin við íslenska þýðingu þeirra.</p>
+                <div class="card" onclick="startGame(1)">
+                    <h2>🎮 Pörun 1</h2>
+                    <p>Finndu parið fyrir hvert latneskt orð.</p>
+                    <p class="word-count">10 orð</p>
+                </div>
+                <div class="card" onclick="startGame(2)">
+                    <h2>🎯 Pörun 2</h2>
+                    <p>Haltu áfram að æfa með fleiri orðum!</p>
+                    <p class="word-count">10 orð</p>
                 </div>
             </div>
         </div>
@@ -360,29 +408,31 @@
             </div>
         </div>
 
-        <!-- Matching View -->
-        <div id="matchingView" class="hidden">
-            <div class="matching-container">
+        <!-- Game View -->
+        <div id="gameView" class="hidden">
+            <div class="game-container">
                 <div class="nav-bar">
                     <button class="btn" onclick="showMenu()">← Til baka</button>
-                    <div class="score-display">
-                        <div class="score" id="matchScore">0 / 20</div>
-                        <div class="attempts">Tilraunir: <span id="matchAttempts">0</span></div>
-                    </div>
-                    <button class="btn" onclick="resetMatching()">🔄 Byrja aftur</button>
+                    <h2 id="gameTitle" style="color: white; font-size: 1.5rem;"></h2>
+                    <button class="btn" onclick="resetGame()">🔄 Byrja aftur</button>
                 </div>
 
-                <div id="feedbackDiv"></div>
+                <div id="gameGrid" class="game-grid"></div>
 
-                <div id="matchingGame">
-                    <div class="matching-grid">
-                        <div class="matching-column">
-                            <h3>Latneska</h3>
-                            <div class="matching-options" id="latinOptions"></div>
+                <div class="score-panel">
+                    <h3>Frammistaða</h3>
+                    <div class="stats">
+                        <div class="stat">
+                            <div class="stat-value" id="movesCount">0</div>
+                            <div class="stat-label">Tilraunir</div>
                         </div>
-                        <div class="matching-column">
-                            <h3>Íslenska</h3>
-                            <div class="matching-options" id="icelandicOptions"></div>
+                        <div class="stat">
+                            <div class="stat-value" id="matchesCount">0</div>
+                            <div class="stat-label">Pör fundin</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" id="timeCount">00:00</div>
+                            <div class="stat-label">Tími</div>
                         </div>
                     </div>
                 </div>
@@ -393,7 +443,7 @@
     </div>
 
     <script>
-        const medicalTerms = [
+        const allTerms = [
             { latin: "Cutis", icelandic: "húð" },
             { latin: "Rubor", icelandic: "húðroði" },
             { latin: "Calor", icelandic: "hiti" },
@@ -409,19 +459,28 @@
             { latin: "Decubitus", icelandic: "þrýstingssár" },
             { latin: "Dermatitis", icelandic: "bólga í húð" },
             { latin: "Erysipelas", icelandic: "heimakoma" },
-            { latin: "Herpex simplex", icelandic: "áblástur" },
+            { latin: "Herpes simplex", icelandic: "áblástur" },
             { latin: "Keloid", icelandic: "ofholdgun" },
             { latin: "Pruritus", icelandic: "kláði í húð" },
             { latin: "Psoriasis", icelandic: "húðhreistur" },
             { latin: "Verruca", icelandic: "smitvarta" }
         ];
 
+        const game1Terms = allTerms.slice(0, 10);
+        const game2Terms = allTerms.slice(10, 20);
+
+        // Flashcard variables
         let currentCard = 0;
-        let shuffledTerms = [...medicalTerms];
-        let selectedLatin = null;
-        let matches = {};
-        let score = 0;
-        let attempts = 0;
+        let shuffledTerms = [...allTerms];
+
+        // Game variables
+        let currentGame = 1;
+        let gameCards = [];
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let moves = 0;
+        let startTime;
+        let timerInterval;
 
         function shuffleArray(array) {
             const arr = [...array];
@@ -435,18 +494,20 @@
         function showMenu() {
             document.getElementById('menuView').classList.remove('hidden');
             document.getElementById('flashcardView').classList.add('hidden');
-            document.getElementById('matchingView').classList.add('hidden');
+            document.getElementById('gameView').classList.add('hidden');
+            clearInterval(timerInterval);
         }
 
-        // Flashcard functions
+        // ========== FLASHCARD FUNCTIONS ==========
         function startFlashcards() {
             document.getElementById('menuView').classList.add('hidden');
             document.getElementById('flashcardView').classList.remove('hidden');
+            document.getElementById('gameView').classList.add('hidden');
             shuffleFlashcards();
         }
 
         function shuffleFlashcards() {
-            shuffledTerms = shuffleArray(medicalTerms);
+            shuffledTerms = shuffleArray(allTerms);
             currentCard = 0;
             updateFlashcard();
         }
@@ -480,111 +541,153 @@
             }
         }
 
-        // Matching functions
-        function startMatching() {
-            document.getElementById('menuView').classList.add('hidden');
-            document.getElementById('matchingView').classList.remove('hidden');
-            resetMatching();
-        }
-
-        function resetMatching() {
-            matches = {};
-            selectedLatin = null;
-            score = 0;
-            attempts = 0;
-            document.getElementById('matchScore').textContent = `0 / ${medicalTerms.length}`;
-            document.getElementById('matchAttempts').textContent = '0';
-            document.getElementById('feedbackDiv').innerHTML = '';
-            document.getElementById('completeScreen').classList.add('hidden');
-            document.getElementById('matchingGame').classList.remove('hidden');
-            renderMatching();
-        }
-
-        function renderMatching() {
-            const unmatched = medicalTerms.filter(t => !matches[t.latin]);
-            const shuffledLatin = shuffleArray(unmatched);
-            const shuffledIcelandic = shuffleArray(unmatched);
-
-            const latinDiv = document.getElementById('latinOptions');
-            const icelandicDiv = document.getElementById('icelandicOptions');
-
-            latinDiv.innerHTML = '';
-            icelandicDiv.innerHTML = '';
-
-            shuffledLatin.forEach(term => {
-                const btn = document.createElement('button');
-                btn.className = 'matching-btn';
-                btn.textContent = term.latin;
-                btn.onclick = () => selectLatin(term);
-                latinDiv.appendChild(btn);
-            });
-
-            shuffledIcelandic.forEach(term => {
-                const btn = document.createElement('button');
-                btn.className = 'matching-btn';
-                btn.textContent = term.icelandic;
-                btn.onclick = () => selectIcelandic(term);
-                icelandicDiv.appendChild(btn);
-            });
-        }
-
-        function selectLatin(term) {
-            selectedLatin = term;
-            document.getElementById('feedbackDiv').innerHTML = '';
+        // ========== GAME FUNCTIONS ==========
+        function startGame(gameNumber) {
+            currentGame = gameNumber;
             
-            document.querySelectorAll('#latinOptions .matching-btn').forEach(btn => {
-                btn.classList.remove('selected');
-                if (btn.textContent === term.latin) {
-                    btn.classList.add('selected');
-                }
+            document.getElementById('menuView').classList.add('hidden');
+            document.getElementById('flashcardView').classList.add('hidden');
+            document.getElementById('gameView').classList.remove('hidden');
+            document.getElementById('gameTitle').textContent = `Pörun ${gameNumber}`;
+            document.getElementById('completeScreen').classList.add('hidden');
+            
+            resetGame();
+        }
+
+        function resetGame() {
+            const terms = currentGame === 1 ? game1Terms : game2Terms;
+            
+            // Create card pairs
+            gameCards = [];
+            terms.forEach((term, index) => {
+                gameCards.push({ id: index, text: term.latin, type: 'latin', pairId: index });
+                gameCards.push({ id: index + 100, text: term.icelandic, type: 'icelandic', pairId: index });
+            });
+            
+            gameCards = shuffleArray(gameCards);
+            flippedCards = [];
+            matchedPairs = 0;
+            moves = 0;
+            
+            updateStats();
+            renderGame();
+            startTimer();
+        }
+
+        function renderGame() {
+            const grid = document.getElementById('gameGrid');
+            grid.innerHTML = '';
+            
+            // Separate and shuffle latin and icelandic cards
+            const latinCards = shuffleArray(gameCards.filter(c => c.type === 'latin'));
+            const icelandicCards = shuffleArray(gameCards.filter(c => c.type === 'icelandic'));
+            
+            // Alternate between latin (left) and icelandic (right) cards
+            const orderedCards = [];
+            for (let i = 0; i < Math.max(latinCards.length, icelandicCards.length); i++) {
+                if (latinCards[i]) orderedCards.push(latinCards[i]);
+                if (icelandicCards[i]) orderedCards.push(icelandicCards[i]);
+            }
+            
+            orderedCards.forEach(card => {
+                const cardEl = document.createElement('div');
+                cardEl.className = 'game-card';
+                cardEl.textContent = card.text;
+                cardEl.dataset.id = card.id;
+                cardEl.dataset.pairId = card.pairId;
+                cardEl.onclick = () => flipGameCard(card, cardEl);
+                grid.appendChild(cardEl);
             });
         }
 
-        function selectIcelandic(term) {
-            if (!selectedLatin) {
-                showFeedback('error', '⚠️ Veldu fyrst latneskt orð!');
+        function flipGameCard(card, cardEl) {
+            if (flippedCards.length >= 2 || cardEl.classList.contains('matched') || cardEl.classList.contains('flipped')) {
                 return;
             }
-
-            attempts++;
-            document.getElementById('matchAttempts').textContent = attempts;
-
-            if (selectedLatin.icelandic === term.icelandic) {
-                matches[selectedLatin.latin] = term.icelandic;
-                score++;
-                document.getElementById('matchScore').textContent = `${score} / ${medicalTerms.length}`;
-                showFeedback('success', '✓ Rétt! 🎉');
-                selectedLatin = null;
-
-                if (score === medicalTerms.length) {
-                    showComplete();
-                } else {
-                    setTimeout(() => renderMatching(), 500);
-                }
-            } else {
-                showFeedback('error', '✗ Reyndu aftur!');
+            
+            cardEl.classList.add('flipped');
+            flippedCards.push({ card, element: cardEl });
+            
+            if (flippedCards.length === 2) {
+                moves++;
+                updateStats();
+                checkMatch();
             }
         }
 
-        function showFeedback(type, message) {
-            const feedbackDiv = document.getElementById('feedbackDiv');
-            feedbackDiv.innerHTML = `<div class="feedback ${type}">${message}</div>`;
+        function checkMatch() {
+            const [first, second] = flippedCards;
+            
+            if (first.card.pairId === second.card.pairId) {
+                // Match found
+                setTimeout(() => {
+                    first.element.classList.remove('flipped');
+                    second.element.classList.remove('flipped');
+                    first.element.classList.add('matched');
+                    second.element.classList.add('matched');
+                    matchedPairs++;
+                    updateStats();
+                    flippedCards = [];
+                    
+                    if (matchedPairs === (currentGame === 1 ? game1Terms.length : game2Terms.length)) {
+                        showComplete();
+                    }
+                }, 500);
+            } else {
+                // No match
+                setTimeout(() => {
+                    first.element.classList.add('wrong');
+                    second.element.classList.add('wrong');
+                    
+                    setTimeout(() => {
+                        first.element.classList.remove('flipped', 'wrong');
+                        second.element.classList.remove('flipped', 'wrong');
+                        flippedCards = [];
+                    }, 600);
+                }, 500);
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('movesCount').textContent = moves;
+            document.getElementById('matchesCount').textContent = matchedPairs;
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            startTime = Date.now();
+            
+            timerInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                const minutes = Math.floor(elapsed / 60);
+                const seconds = elapsed % 60;
+                document.getElementById('timeCount').textContent = 
+                    `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            }, 1000);
         }
 
         function showComplete() {
-            document.getElementById('matchingGame').classList.add('hidden');
-            const percentage = Math.round((score / attempts) * 100);
-            document.getElementById('completeScreen').innerHTML = `
-                <div class="complete-card">
-                    <h2>Til hamingju! 🎉</h2>
-                    <p>Þú kláraðir öll orðin!</p>
-                    <p style="color: #6b7280; margin-top: 1rem;">
-                        Stigahlutfall: ${score}/${attempts} (${percentage}% rétt)
-                    </p>
-                    <button class="btn" onclick="resetMatching()">Spila aftur</button>
-                </div>
-            `;
-            document.getElementById('completeScreen').classList.remove('hidden');
+            clearInterval(timerInterval);
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            const timeStr = `${minutes}:${String(seconds).padStart(2, '0')}`;
+            
+            setTimeout(() => {
+                document.getElementById('completeScreen').innerHTML = `
+                    <div class="complete-card">
+                        <h2>Til hamingju! 🎉</h2>
+                        <p>Þú kláraðir Pörun ${currentGame}!</p>
+                        <p style="color: #6b7280; margin-top: 1rem;">
+                            Tilraunir: ${moves}<br>
+                            Tími: ${timeStr}
+                        </p>
+                        <button class="btn" onclick="resetGame()">Spila aftur</button>
+                        <button class="btn" onclick="showMenu()" style="margin-left: 1rem;">Til baka</button>
+                    </div>
+                `;
+                document.getElementById('completeScreen').classList.remove('hidden');
+            }, 1000);
         }
 
         // Initialize
